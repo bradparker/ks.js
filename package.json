@@ -1,0 +1,24 @@
+{
+  "name": "keep sake",
+  "version": "0.0.0",
+  "description": "Active record for client side store",
+  "main": "lib/main.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "lodash": "^2.4.1"
+  },
+  "devDependencies": {
+    "broccoli": "^0.12.3",
+    "broccoli-es6-module-transpiler": "^0.2.3"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Brad Parker hi@bradparker.com",
+  "license": "MIT",
+  "jshintConfig": {
+    "esnext": true
+  }
+}
