@@ -36,11 +36,11 @@
 
     var utils$xhr$$default = utils$xhr$$xhr;
 
-    function record$constructor$methods$$_all () {
+    function record$constructor$methods$$all () {
       return this._collection;
     }
 
-    function record$constructor$methods$$_add (record) {
+    function record$constructor$methods$$add (record) {
       var collection = this.all();
       var index = collection.indexOf(record);
 
@@ -56,14 +56,14 @@
       return record;
     }
 
-    function record$constructor$methods$$_remove (record) {
+    function record$constructor$methods$$remove (record) {
       var collection = this.all();
       var index = collection.indexOf(record);
 
       return collection.splice(index, 1);
     }
 
-    function record$constructor$methods$$_fetchAll () {
+    function record$constructor$methods$$fetchAll () {
       return utils$xhr$$default({
         url: '/foo'
       });
@@ -71,10 +71,10 @@
 
     function record$constructor$methods$$addConstructorMethods (Constuctor) {
       _.extend(Constuctor, {
-        fetchAll: record$constructor$methods$$_fetchAll,
-        all: record$constructor$methods$$_all,
-        add: record$constructor$methods$$_add,
-        remove: record$constructor$methods$$_remove
+        fetchAll: record$constructor$methods$$fetchAll,
+        all: record$constructor$methods$$all,
+        add: record$constructor$methods$$add,
+        remove: record$constructor$methods$$remove
       });
     }
 
@@ -82,6 +82,10 @@
     var record$prototype$methods$$relMethods = {
       hasMany: record$prototype$methods$$hasMany
     };
+
+    function record$prototype$methods$$update (properties) {
+      return _.extend(this, properties);
+    }
 
     function record$prototype$methods$$hasMany (instance, relationship) {
       var collection = instance._store[relationship.collection];
@@ -112,26 +116,22 @@
 
     function record$prototype$methods$$addPrototypeMethods (proto, definition) {
       record$prototype$methods$$addRelations(proto, definition.relationships);
+      _.extend(proto, {
+        update: record$prototype$methods$$update
+      });
     }
 
     var record$prototype$methods$$default = record$prototype$methods$$addPrototypeMethods;
+    var store$main$$store = {};
 
-    var main$$store = {};
+    var store$main$$default = store$main$$store;
 
-    function main$$RecordBase (properties) {
-      return _.extend(this, properties);
-    }
-
-    function main$$update (properties) {
-      return _.extend(this, properties);
-    }
-
-    function main$$define (identifier, definition) {
+    function record$define$$define (identifier, definition) {
       definition = definition || {};
-      var collection = main$$store[identifier] = [];
+      var collection = store$main$$default[identifier] = [];
 
       function Record (properties) {
-        main$$RecordBase.call(this, properties);
+        return _.extend(this, properties);
       }
 
       collection._Model = Record;
@@ -143,27 +143,21 @@
       });
       record$constructor$methods$$default(Record);
 
-      Record.prototype = Object.create(main$$RecordBase.prototype);
-
       _.extend(Record.prototype, {
-        constructor: Record,
         _primaryKey: Record._primaryKey,
-        _store: main$$store
+        _store: store$main$$default
       });
       record$prototype$methods$$default(Record.prototype, definition);
 
       return Record;
     }
 
-    _.extend(main$$RecordBase, {
-      define: main$$define
-    });
+    var record$define$$default = record$define$$define;
 
-    _.extend(main$$RecordBase.prototype, {
-      update: main$$update 
-    });
+    var main$$ks = {};
+    main$$ks.defineResource = record$define$$default;
 
-    this.RecordBase = main$$RecordBase;
+    this.ks = main$$ks;
 }).call(this);
 
 //# sourceMappingURL=ks.js.map
