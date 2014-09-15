@@ -44,7 +44,7 @@
       var collection = this.all();
       var index = collection.indexOf(record);
 
-      if (index > 0) {
+      if (index >= 0) {
         return record;
       }
 
