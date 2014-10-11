@@ -10,27 +10,31 @@
 
   describe('Record', function () {
     it('should be unique', function () {
-      var Cat = ks.defineResource('cats');
-      var Dog = ks.defineResource('dogs');
+      var store = ks.createStore();
+      var Cat = store.defineResource('cats');
+      var Dog = store.defineResource('dogs');
 
       expect(Cat).to.not.equal(Dog);
     });
 
     it('should have an identifier', function () {
-      var Cat = ks.defineResource('cats');
+      var store = ks.createStore();
+      var Cat = store.defineResource('cats');
 
-      expect(Cat._identifier).to.equal('cats');
+      expect(Cat.get('identifier')).to.equal('cats');
     });
 
     it('should have a collection array', function () {
-      var Cat = ks.defineResource('cats');
+      var store = ks.createStore();
+      var Cat = store.defineResource('cats');
 
-      expect(Cat._collection).to.be.an.instanceof(Array);
+      expect(Cat.get('collection')).to.be.an.instanceof(Array);
     });
 
     describe('#fetchAll', function () {
       it('should make a request', function () {
-        var Cat = ks.defineResource('cats');
+        var store = ks.createStore();
+        var Cat = store.defineResource('cats');
         Cat.fetchAll();
 
         expect(requests.length).to.equal(1);
@@ -38,8 +42,51 @@
         requests = [];
       });
 
+      describe('the request', function () {
+        it('should be for an appropriate resource URL', function () {
+          var store = ks.createStore();
+          var Cat = store.defineResource('cats');
+          Cat.fetchAll();
+
+          expect(requests[0].url).to.equal('/cats');
+          requests = [];
+        });
+
+        describe('the resource URL', function () {
+          it('should contain the resource\'s identifier', function () {
+            var store = ks.createStore();
+            var Cat = store.defineResource('cats');
+            Cat.fetchAll();
+            
+            var index = requests[0].url.indexOf('cats');
+            expect(index).to.equal(1);
+            requests = [];
+          });
+
+          it('should be configurable via the baseURL property of the store', function () {
+            var store = ks.createStore({ baseURL: '/api/v1/'});
+            var Cat = store.defineResource('cats');
+            Cat.fetchAll();
+            
+            expect(requests[0].url).to.equal('/api/v1/cats');
+            requests = [];
+          });
+
+          it('should be configurable via the baseURL property of the collection', function () {
+            var store = ks.createStore({ baseURL: '/api/v1/'});
+            var Cat = store.defineResource('cats', { baseURL: '/api/v1/' });
+            Cat.fetchAll();
+            
+            expect(requests[0].url).to.equal('/api/v1/cats');
+            requests = [];
+          });
+        });
+      });
+      
+
       it('should return a promise', function () {
-        var Cat = ks.defineResource('cats');
+        var store = ks.createStore();
+        var Cat = store.defineResource('cats');
         Cat.fetchAll();
 
         expect(Cat.fetchAll().then).to.be.an.instanceof(Function);
@@ -49,7 +96,8 @@
       });
 
       it('should resolve to a server response', function (done) {
-        var Cat = ks.defineResource('cats');
+        var store = ks.createStore();
+        var Cat = store.defineResource('cats');
 
         Cat.fetchAll().then(function (res) {
           expect(res.cats[0].name).to.equal("Felix");
@@ -57,32 +105,33 @@
           done();
         }).catch(done);
 
-        requests[0].respond(
-          200, 
-          { "Content-Type": "application/json" },
-          '{ "cats": [{ "name": "Felix" }] }'
-          );
+        requests[0].respond(200, { 
+            "Content-Type": "application/json" 
+          }, '{ "cats": [{ "name": "Felix" }] }');
       });
     });
 
     describe('#all', function () {
       it('should return the Record\'s collection array', function () {
-        var Cat = ks.defineResource('cats');
+        var store = ks.createStore();
+        var Cat = store.defineResource('cats');
 
-        expect(Cat._collection).to.equal(Cat.all());
+        expect(Cat.get('collection')).to.equal(Cat.all());
       });
     });
 
     describe('#add', function () {
       it('should add a record instance to the Record\'s collection array', function () {
-        var Cat = ks.defineResource('cats');
+        var store = ks.createStore();
+        var Cat = store.defineResource('cats');
         Cat.add({ name: 'Cat Stevens' });
 
         expect(Cat.all()[0]).to.be.an.instanceof(Cat);
       });
 
       it('should not add duplicates', function () {
-        var Cat = ks.defineResource('cats');
+        var store = ks.createStore();
+        var Cat = store.defineResource('cats');
         var cat = Cat.add({ name: 'Cat Stevens' });
         var cat2 = Cat.add(cat);
 
@@ -93,7 +142,8 @@
 
     describe('#remove', function () {
       it('should remove a record instance from the Record\'s collection array', function () {
-        var Cat = ks.defineResource('cats');
+        var store = ks.createStore();
+        var Cat = store.defineResource('cats');
         var cat = Cat.add({ name: 'Cat Stevens' });
 
         expect(Cat.all().length).to.equal(1);
@@ -107,12 +157,14 @@
     describe('relationships', function () {
       describe('#hasMany', function () {
         it('should return an array', function () {
-          var Cat = ks.defineResource('cats', {
+          var store = ks.createStore();
+          var Dog = store.defineResource('dogs');
+          var Cat = store.defineResource('cats', {
             relationships: {
               dogs: {
                 collection: 'dogs',
-              foreignKey: 'cat_id',
-              kind: 'hasMany'
+                foreignKey: 'cat_id',
+                kind: 'hasMany'
               }
             }
           });
@@ -122,19 +174,21 @@
         });
 
         it('should return an array containing Records', function () {
-          var Cat = ks.defineResource('cats', {
+          var store = ks.createStore();
+
+          var Cat = store.defineResource('cats', {
             relationships: {
               dogs: {
                 collection: 'dogs',
-              foreignKey: 'cat_id',
-              kind: 'hasMany'
+                foreignKey: 'cat_id',
+                kind: 'hasMany'
               }
             }
           });
           var cat = new Cat({ id: 1, name: 'Felix' });
           Cat.add(cat);
 
-          var Dog = ks.defineResource('dogs');
+          var Dog = store.defineResource('dogs');
           var dog = new Dog({ name: 'Fido', cat_id: 1 });
           Dog.add(dog);
 
@@ -143,19 +197,20 @@
 
         describe('the returned array', function () {
           it('should have the correct _Model attribute', function () {
-            var Cat = ks.defineResource('cats', {
+            var store = ks.createStore();
+            var Cat = store.defineResource('cats', {
               relationships: {
                 dogs: {
                   collection: 'dogs',
-                foreignKey: 'cat_id',
-                kind: 'hasMany'
+                  foreignKey: 'cat_id',
+                  kind: 'hasMany'
                 }
               }
             });
             var cat = new Cat({ id: 1, name: 'Felix' });
             Cat.add(cat);
 
-            var Dog = ks.defineResource('dogs');
+            var Dog = store.defineResource('dogs');
             var dog = new Dog({ name: 'Fido', cat_id: 1 });
             Dog.add(dog);
 
