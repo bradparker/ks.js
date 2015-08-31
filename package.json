@@ -1,5 +1,5 @@
 {
-  "name": "keep sake",
+  "name": "ks.js",
   "version": "0.0.0",
   "description": "Active record for client side store",
   "main": "lib/main.js",
@@ -10,10 +10,15 @@
     "lodash": "^2.4.1"
   },
   "devDependencies": {
-    "broccoli": "^0.12.3",
-    "broccoli-es6-module-transpiler": "^0.2.3"
+    "babel": "^5.8.23",
+    "browserify": "^11.0.1",
+    "node-static": "^0.7.7",
+    "nodemon": "^1.4.1"
   },
   "scripts": {
+    "build": "babel lib --out-dir dist && browserify dist/main.js > dist/ks.js",
+    "watch": "nodemon --watch lib --ext js --exec 'npm run build'",
+    "dev": "npm run watch & static .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Brad Parker hi@bradparker.com",

@@ -7,21 +7,20 @@
 </head>
 <body>
     <div id="mocha"></div>
-    <script src="bower_components/mocha/mocha.js"></script>
-    <script src="bower_components/sinonjs/sinon.js"></script>
+    <script src="/test/bower_components/mocha/mocha.js"></script>
+    <script src="/test/bower_components/sinonjs/sinon.js"></script>
     <script>mocha.setup('bdd')</script>
-    <script src="bower_components/chai/chai.js"></script>
+    <script src="/test/bower_components/chai/chai.js"></script>
     <script>
         var assert = chai.assert;
         var expect = chai.expect;
         var should = chai.should();
     </script>
 
-    
     <script src="/node_modules/lodash/dist/lodash.js"></script>
 
     <!-- include source files here... -->
-    <script src="http://localhost:4200/ks.js"></script>
+    <script src="/dist/ks.js"></script>
 
     <!-- include spec files here... -->
     <script src="spec/ks.js"></script>
